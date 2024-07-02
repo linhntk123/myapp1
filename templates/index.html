@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Analysis</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Text Analysis</h1>
+    <form id="textForm">
+        <label for="textInput">Enter Text:</label><br>
+        <textarea id="textInput" name="textInput" rows="4" cols="50"></textarea><br><br>
+        <input type="submit" value="Analyze Text">
+    </form>
+    <br>
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function(){
+            $('#textForm').submit(function(event){
+                event.preventDefault();
+                var inputText = $('#textInput').val();
+                analyzeText(inputText);
+            });
+
+            function analyzeText(inputText) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/analyze',
+                    contentType: 'application/json',
+                    data: JSON.stringify({text: inputText}),
+                    success: function(response) {
+                        var resultHtml = '<h2>Part of Speech:</h2><ul>';
+                        response.pos.forEach(function(item) {
+                            resultHtml += '<li>' + item.Text + ': ' + item.PartOfSpeech.Tag + '</li>';
+                        });
+                        resultHtml += '</ul><h2>Named Entities:</h2><ul>';
+                        response.ner.forEach(function(item) {
+                            resultHtml += '<li>' + item.Text + ' (' + item.Type + ')</li>';
+                        });
+                        resultHtml += '</ul>';
+                        $('#result').html(resultHtml);
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                        $('#result').text('Error occurred. Please try again.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
